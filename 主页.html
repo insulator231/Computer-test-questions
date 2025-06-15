@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeMaster | 编程语言客观题训练系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* 基础主题变量 */
+            --primary-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-light: rgba(148, 163, 184, 0.2);
+            
+            /* 语言特定主题变量 - 默认C语言 */
+            --theme-primary: #4f46e5;
+            --theme-secondary: #8b5cf6;
+            --theme-accent: #60a5fa;
+            --theme-glow: rgba(79, 70, 229, 0.3);
+            --theme-text: 'C';
+        }
+
+        /* 语言主题定义 */
+        body.theme-c {
+            --theme-primary: #4f46e5;
+            --theme-secondary: #8b5cf6;
+            --theme-accent: #60a5fa;
+            --theme-glow: rgba(79, 70, 229, 0.3);
+            --theme-text: 'C';
+        }
+        
+        body.theme-python {
+            --theme-primary: #2e8540;
+            --theme-secondary: #38a169;
+            --theme-accent: #48bb78;
+            --theme-glow: rgba(46, 133, 64, 0.3);
+            --theme-text: 'Python';
+        }
+        
+        body.theme-java {
+            --theme-primary: #b07219;
+            --theme-secondary: #e76f00;
+            --theme-accent: #f89820;
+            --theme-glow: rgba(176, 114, 25, 0.3);
+            --theme-text: 'Java';
+        }
+        
+        body.theme-js {
+            --theme-primary: #f0db4f;
+            --theme-secondary: #f7df1e;
+            --theme-accent: #f8e71c;
+            --theme-glow: rgba(240, 219, 79, 0.3);
+            --theme-text: 'JS';
+        }
+        
+        body.theme-cpp {
+            --theme-primary: #004482;
+            --theme-secondary: #659ad2;
+            --theme-accent: #00599c;
+            --theme-glow: rgba(0, 68, 130, 0.3);
+            --theme-text: 'C++';
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            transition: background-color 0.5s ease, color 0.3s ease;
+        }
+
+        body {
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text-light);
+        }
+
+        /* 语言文字背景 */
+        /* 语言文字背景容器 */
+        .lang-text-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+
+            /* 语言文字背景容器 */
+            .lang-text-bg {
+                opacity: 0.12;  
+            }
+            
+            /* 单个文字元素 */
+            .lang-text-bg span {
+                opacity: 0.8; 
+            }
+            
+            .lang-text-bg span:nth-child(2) {
+                opacity: 0.6;  
+            }
+            
+            .lang-text-bg span:nth-child(3) {
+                opacity: 0.5;  
+            }
+            
+            .lang-text-bg span:nth-child(4) {
+                opacity: 0.6;  
+            }
+            
+            .lang-text-bg span:nth-child(5) {
+                opacity: 0.7; 
+            }
+        }
+        .lang-text-bg span {
+            position: absolute;
+            font-weight: 900;
+            color: var(--theme-primary);
+
+            opacity: 0.4; /* 从 0.6 降低到 0.4 */
+            font-size: 8vw;
+            transform: rotate(-30deg);
+            user-select: none;
+            text-shadow: 0 0 10px rgba(255,255,255,0.1);
+            animation: floatText 30s infinite linear;
+        }
+        
+        .lang-text-bg span:nth-child(2) {
+            top: 30%;
+            left: 20%;
+            font-size: 6vw;
+            color: var(--theme-secondary);
+            animation-duration: 25s;
+            animation-direction: reverse;
+        }
+        
+        .lang-text-bg span:nth-child(3) {
+            top: 60%;
+            left: 60%;
+            font-size: 9vw;
+            color: var(--theme-accent);
+            animation-duration: 35s;
+        }
+        
+        .lang-text-bg span:nth-child(4) {
+            top: 20%;
+            left: 70%;
+            font-size: 5vw;
+            color: var(--theme-secondary);
+            animation-duration: 28s;
+        }
+        
+        .lang-text-bg span:nth-child(5) {
+            top: 70%;
+            left: 10%;
+            font-size: 7vw;
+            color: var(--theme-primary);
+            animation-duration: 32s;
+            animation-direction: reverse;
+        }
+
+        /* 网格背景 */
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border-light) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-light) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.15;
+            z-index: -3;
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--theme-accent);
+            filter: blur(20px);
+            animation: float 15s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        .particle:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 5%;
+            opacity: 0.1;
+        }
+
+        .particle:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: 15%;
+            right: 10%;
+            opacity: 0.15;
+            animation-delay: 2s;
+        }
+
+        .particle:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 40%;
+            right: 20%;
+            opacity: 0.08;
+            animation-delay: 4s;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* 霓虹边框效果 */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            animation: border-animation 3s infinite linear;
+        }
+
+        .title-group {
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .title {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .language-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 40px auto;
+            max-width: 800px;
+            flex-wrap: wrap;
+        }
+
+        .language-tab {
+            padding: 12px 24px;
+            border-radius: 30px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .language-tab.active {
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 15px var(--theme-glow);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            border-color: var(--theme-accent);
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .feature-desc {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px var(--theme-glow);
+        }
+
+        .contact-section {
+            margin-top: 70px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .contact-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .contact-methods {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+        }
+
+        .contact-item i {
+            color: var(--theme-accent);
+            font-size: 1.3rem;
+        }
+
+        .feedback-form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border-light);
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .footer {
+            color: var(--text-muted);
+            margin-top: 50px;
+            font-size: 0.9rem;
+            font-weight: 300;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--theme-accent);
+        }
+
+        /* 语言标签图标 */
+        .lang-icon {
+            font-size: 1.2rem;
+        }
+
+        /* 动画定义 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            25% { transform: translateY(-20px) translateX(10px) scale(1.05); }
+            50% { transform: translateY(10px) translateX(-15px) scale(0.95); }
+            75% { transform: translateY(-15px) translateX(-10px) scale(1.02); }
+        }
+
+        @keyframes border-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes floatText {
+            0% { transform: translateX(-20%) rotate(-30deg); }
+            100% { transform: translateX(100%) rotate(-30deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .title {
+                font-size: 2.8rem;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .lang-text-bg span {
+                font-size: 10vw;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            .title {
+                font-size: 2.3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .feature-card {
+                padding: 30px 20px;
+            }
+            
+            .footer {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .lang-text-bg span {
+                font-size: 12vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .language-tabs {
+                gap: 10px;
+            }
+            
+            .language-tab {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+            
+            .lang-text-bg span {
+                font-size: 14vw;
+            }
+        }
+    </style>
+</head>
+<body class="theme-c">
+    <!-- 背景装饰元素 -->
+    <div class="bg-elements">
+        <div class="grid-pattern"></div>
+        <div class="lang-text-bg">
+            <span>C</span><span>C</span><span>C</span><span>C</span>
+            <span>C</span><span>C</span><span>C</span><span>C</span>
+            <span>C</span><span>C</span><span>C</span><span>C</span>
+        </div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <div class="container">
+        <div class="title-group">
+            <h1 class="title">CodeMaster</h1>
+            <p class="subtitle">专业编程语言客观题训练与评估系统</p>
+        </div>
+        
+        <div class="language-tabs">
+            <div class="language-tab active" data-lang="c">
+                <i class="fab fa-c lang-icon"></i>C语言
+            </div>
+            <div class="language-tab" data-lang="python">
+                <i class="fab fa-python lang-icon"></i>Python
+            </div>
+            <div class="language-tab" data-lang="java">
+                <i class="fab fa-java lang-icon"></i>Java
+            </div>
+            <div class="language-tab" data-lang="js">
+                <i class="fab fa-js lang-icon"></i>JavaScript
+            </div>
+            <div class="language-tab" data-lang="cpp">
+                <i class="fas fa-plus-circle lang-icon"></i>C++
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <div class="feature-card">
+                <i class="fas fa-graduation-cap feature-icon"></i>
+                <h3 class="feature-title">专项训练</h3>
+                <p class="feature-desc">针对编程核心概念的专项练习，巩固基础知识，提升编码能力</p>
+                <a href="#" class="cta-btn start-training">
+                    开始训练
+                </a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-file-alt feature-icon"></i>
+                <h3 class="feature-title">模拟考试</h3>
+                <p class="feature-desc">真实考试环境模拟，定时完成题目，检验学习成果</p>
+                <a href="#" class="cta-btn start-exam">
+                    模拟测试
+                </a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-chart-line feature-icon"></i>
+                <h3 class="feature-title">学习分析</h3>
+                <p class="feature-desc">详细的学习数据统计与分析，识别薄弱环节，提供个性化建议</p>
+                <a href="#" class="cta-btn view-report">
+                    查看报告
+                </a>
+            </div>
+        </div>
+        
+        <div class="contact-section">
+            <h3 class="contact-title">问题反馈与技术支持</h3>
+            
+            <div class="contact-methods">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>3199206565@qq.com</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>15271190135</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fab fa-weixin"></i>
+                    <span>Camellia</span>
+                </div>
+            </div>
+            
+            <div class="feedback-form">
+                <h4 style="margin-bottom: 20px; text-align: center;">报告题目问题</h4>
+                <div class="form-group">
+                    <label for="email">您的邮箱</label>
+                    <input type="email" id="email" placeholder="用于接收反馈结果">
+                </div>
+                <div class="form-group">
+                    <label for="issue">问题描述</label>
+                    <textarea id="issue" placeholder="请描述您遇到的题目问题（题目ID、具体问题描述）"></textarea>
+                </div>
+                <button class="cta-btn" style="width: 100%;">提交反馈</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div>CodeMaster 专业版 v3.0 | © 2023 编程大师教育科技</div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-weibo"></i></a>
+                <a href="#"><i class="fab fa-zhihu"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 语言标签切换
+        const languageTabs = document.querySelectorAll('.language-tab');
+        let currentLang = 'c';
+        
+        languageTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有active类
+                languageTabs.forEach(t => t.classList.remove('active'));
+                // 为当前点击的标签添加active类
+                tab.classList.add('active');
+                
+                // 获取语言标识
+                const lang = tab.getAttribute('data-lang');
+                currentLang = lang;
+                
+                // 更新主题
+                document.body.className = '';
+                document.body.classList.add(`theme-${lang}`);
+                
+                // 更新语言文字背景
+                updateLangText(lang);
+                
+                // 更新按钮URL
+                updateButtonUrls();
+            });
+        });
+        
+        // 更新语言文字背景
+        function updateLangText(lang) {
+            const langTextMap = {
+                'c': 'C',
+                'python': 'Python',
+                'java': 'Java',
+                'js': 'JS',
+                'cpp': 'C++'
+            };
+            
+            const text = langTextMap[lang] || 'Code';
+            const textElements = document.querySelectorAll('.lang-text-bg span');
+            
+            textElements.forEach(el => {
+                el.textContent = text;
+            });
+        }
+        
+        // 更新按钮URL
+        function updateButtonUrls() {
+            document.querySelector('.start-training').href = `训练主页.html?lang=${currentLang}`;
+            document.querySelector('.start-exam').href = `模拟考试主页.html?lang=${currentLang}`;
+            document.querySelector('.view-report').href = `学习报告.html?lang=${currentLang}`;
+        }
+        
+        // 初始化按钮URL
+        updateButtonUrls();
+        
+        // 表单提交处理
+        const feedbackForm = document.querySelector('.feedback-form');
+        if(feedbackForm) {
+            feedbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('感谢您的反馈！我们会尽快处理您的问题。');
+                feedbackForm.reset();
+            });
+        }
+    </script>
+</body>
+</html>

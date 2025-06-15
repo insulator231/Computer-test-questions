@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程语言客观题模拟考试系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* 基础主题变量 */
+            --primary-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-light: rgba(148, 163, 184, 0.2);
+            
+            /* 语言特定主题变量 - 默认C语言 */
+            --theme-primary: #4f46e5;
+            --theme-secondary: #8b5cf6;
+            --theme-accent: #60a5fa;
+            --theme-glow: rgba(79, 70, 229, 0.3);
+            --theme-text: 'C';
+        }
+
+        /* 语言主题定义 */
+        body.theme-c {
+            --theme-primary: #4f46e5;
+            --theme-secondary: #8b5cf6;
+            --theme-accent: #60a5fa;
+            --theme-glow: rgba(79, 70, 229, 0.3);
+            --theme-text: 'C';
+        }
+        
+        body.theme-python {
+            --theme-primary: #2e8540;
+            --theme-secondary: #38a169;
+            --theme-accent: #48bb78;
+            --theme-glow: rgba(46, 133, 64, 0.3);
+            --theme-text: 'Python';
+        }
+        
+        body.theme-java {
+            --theme-primary: #b07219;
+            --theme-secondary: #e76f00;
+            --theme-accent: #f89820;
+            --theme-glow: rgba(176, 114, 25, 0.3);
+            --theme-text: 'Java';
+        }
+        
+        body.theme-js {
+            --theme-primary: #f0db4f;
+            --theme-secondary: #f7df1e;
+            --theme-accent: #f8e71c;
+            --theme-glow: rgba(240, 219, 79, 0.3);
+            --theme-text: 'JS';
+        }
+        
+        body.theme-cpp {
+            --theme-primary: #004482;
+            --theme-secondary: #659ad2;
+            --theme-accent: #00599c;
+            --theme-glow: rgba(0, 68, 130, 0.3);
+            --theme-text: 'C++';
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            transition: background-color 0.5s ease, color 0.3s ease;
+        }
+
+        body {
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text-light);
+        }
+
+        /* 语言文字背景 */
+        .lang-text-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        .lang-text-bg span {
+            position: absolute;
+            font-weight: 900;
+            color: var(--theme-primary);
+            opacity: 0.4;
+            font-size: 8vw;
+            transform: rotate(-30deg);
+            user-select: none;
+            text-shadow: 0 0 10px rgba(255,255,255,0.1);
+            animation: floatText 30s infinite linear;
+        }
+        
+        .lang-text-bg span:nth-child(2) {
+            top: 30%;
+            left: 20%;
+            font-size: 6vw;
+            color: var(--theme-secondary);
+            animation-duration: 25s;
+            animation-direction: reverse;
+        }
+        
+        .lang-text-bg span:nth-child(3) {
+            top: 60%;
+            left: 60%;
+            font-size: 9vw;
+            color: var(--theme-accent);
+            animation-duration: 35s;
+        }
+        
+        .lang-text-bg span:nth-child(4) {
+            top: 20%;
+            left: 70%;
+            font-size: 5vw;
+            color: var(--theme-secondary);
+            animation-duration: 28s;
+        }
+        
+        .lang-text-bg span:nth-child(5) {
+            top: 70%;
+            left: 10%;
+            font-size: 7vw;
+            color: var(--theme-primary);
+            animation-duration: 32s;
+            animation-direction: reverse;
+        }
+
+        /* 网格背景 */
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border-light) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-light) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.15;
+            z-index: -3;
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--theme-accent);
+            filter: blur(20px);
+            animation: float 15s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        .particle:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 5%;
+            opacity: 0.1;
+        }
+
+        .particle:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: 15%;
+            right: 10%;
+            opacity: 0.15;
+            animation-delay: 2s;
+        }
+
+        .particle:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 40%;
+            right: 20%;
+            opacity: 0.08;
+            animation-delay: 4s;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* 霓虹边框效果 */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            animation: border-animation 3s infinite linear;
+        }
+
+        .title-group {
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .title {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            border-color: var(--theme-accent);
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .feature-desc {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px var(--theme-glow);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 30px;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: var(--theme-accent);
+        }
+
+        .footer {
+            color: var(--text-muted);
+            margin-top: 50px;
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        /* 动画定义 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            25% { transform: translateY(-20px) translateX(10px) scale(1.05); }
+            50% { transform: translateY(10px) translateX(-15px) scale(0.95); }
+            75% { transform: translateY(-15px) translateX(-10px) scale(1.02); }
+        }
+
+        @keyframes border-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes floatText {
+            0% { transform: translateX(-20%) rotate(-30deg); }
+            100% { transform: translateX(100%) rotate(-30deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .button-group {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+            
+            .lang-text-bg span {
+                font-size: 10vw;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            .title {
+                font-size: 2.3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .feature-card {
+                padding: 30px 20px;
+            }
+            
+            .lang-text-bg span {
+                font-size: 12vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .lang-text-bg span {
+                font-size: 14vw;
+            }
+        }
+    </style>
+</head>
+<body class="theme-c">
+    <!-- 背景装饰元素 -->
+    <div class="bg-elements">
+        <div class="grid-pattern"></div>
+        <div class="lang-text-bg">
+            <span>C</span><span>C</span><span>C</span><span>C</span>
+            <span>C</span><span>C</span><span>C</span><span>C</span>
+            <span>C</span><span>C</span><span>C</span><span>C</span>
+        </div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <div class="container">
+        <div class="title-group">
+            <h1 class="title">C语言客观题模拟考试系统</h1>
+            <p class="subtitle">真实考试环境模拟，智能组卷功能，全面提升你的应试能力</p>
+        </div>
+        
+        <div class="button-group">
+            <div class="feature-card">
+                <i class="fas fa-question-circle feature-icon"></i>
+                <h3 class="feature-title">选择题模拟考试</h3>
+                <p class="feature-desc">包含多种题型的选择题考试，涵盖核心知识点，真实模拟考试环境</p>
+                <a href="#" class="cta-btn start-training">
+                    开始考试
+                </a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-check-circle feature-icon"></i>
+                <h3 class="feature-title">判断题模拟考试</h3>
+                <p class="feature-desc">测试你对概念的理解，快速判断对错，提升解题速度和准确率</p>
+                <a href="#" class="cta-btn start-exam">
+                    开始考试
+                </a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-file-medical feature-icon"></i>
+                <h3 class="feature-title">一键智能组卷</h3>
+                <p class="feature-desc">根据你的学习情况智能生成个性化试卷，覆盖薄弱知识点</p>
+                <a href="#" class="cta-btn view-report">
+                    立即组卷
+                </a>
+            </div>
+        </div>
+        
+        <a href="辅助.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> 返回主页
+        </a>
+        
+        <div class="footer">
+            <p>系统版本 3.0 | 专业模拟考试系统 © 2023 编程大师教育科技</p>
+        </div>
+    </div>
+
+    <script>
+        // 语言名称映射
+        const langNames = {
+            'c': 'C语言',
+            'python': 'Python',
+            'java': 'Java',
+            'js': 'JavaScript',
+            'cpp': 'C++'
+        };
+        
+        // 从URL获取语言参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || 'c';
+        
+        // 设置主题
+        document.body.className = `theme-${lang}`;
+        
+        // 更新页面标题
+        const langName = langNames[lang] || 'C语言';
+        document.querySelector('.title').textContent = `${langName}客观题模拟考试系统`;
+        document.title = `${langName}客观题模拟考试系统`;
+        
+        // 更新背景文字
+        function updateLangText(lang) {
+            const langTextMap = {
+                'c': 'C',
+                'python': 'Python',
+                'java': 'Java',
+                'js': 'JS',
+                'cpp': 'C++'
+            };
+            
+            const text = langTextMap[lang] || 'C';
+            const textElements = document.querySelectorAll('.lang-text-bg span');
+            
+            textElements.forEach(el => {
+                el.textContent = text;
+            });
+        }
+        
+        // 初始化背景文字
+        updateLangText(lang);
+        
+        // 更新按钮链接
+        const choiceBtn = document.querySelector('.start-training');
+        const judgeBtn = document.querySelector('.start-exam');
+        const generateBtn = document.querySelector('.view-report');
+        
+        if(choiceBtn) {
+            choiceBtn.href = `选择题模拟考试.html?lang=${lang}`;
+        }
+        if(judgeBtn) {
+            judgeBtn.href = `判断题模拟考试.html?lang=${lang}`;
+        }
+        if(generateBtn) {
+            generateBtn.href = `智能组卷.html?lang=${lang}`;
+        }
+    </script>
+</body>
+</html>
