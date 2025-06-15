@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>选择题训练系统 - 即时反馈版</title>
+    <title>填空题训练系统 - 即时反馈版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="data/choice_questions_c.js"></script>
+    <script src="data/fill_in_the_blank_questions_c.js"></script>    
     <style>
         :root {
             /* 基础主题变量 */
@@ -382,39 +382,64 @@
             border-radius: 10px;
             border-left: 5px solid var(--theme-primary);
         }
-
-        .options {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        
+        .blank-input {
+            min-width: 150px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: var(--text-light);
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .blank-input:focus {
+            outline: none;
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
         }
 
-        .option-btn {
-            padding: 15px;
-            border: 2px solid var(--border-light);
-            border-radius: 10px;
+        .submit-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
             cursor: pointer;
+            font-weight: bold;
             font-size: 16px;
             transition: all 0.3s ease;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-            background: rgba(30, 41, 59, 0.5);
-            color: var(--text-light);
-            text-align: left;
+            gap: 8px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            margin-top: 15px;
         }
-
-        .option-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--theme-primary);
+        
+        .submit-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+            z-index: -1;
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .submit-btn:hover {
             transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
-
-        .option-btn.selected {
-            border-color: var(--theme-primary);
-            background: rgba(75, 108, 183, 0.3);
-            box-shadow: 0 0 0 2px rgba(75, 108, 183, 0.5);
+        
+        .submit-btn:hover::before {
+            transform: translateX(100%);
         }
 
         .feedback {
@@ -632,8 +657,9 @@
                 font-size: 16px;
             }
             
-            .option-btn {
-                padding: 12px;
+            .blank-input {
+                width: 100%;
+                margin: 5px 0;
             }
             
             .feedback-container {
@@ -684,7 +710,7 @@
     
     <div class="container">
         <header>
-            <h1 id="page-title">C语言选择题训练系统</h1>
+            <h1 id="page-title">C语言填空题训练系统</h1>
             <div class="subtitle">即时反馈 · 错题标记 · 高效学习</div>
         </header>
         
@@ -743,7 +769,7 @@
     </div>
     
     <footer>
-        编程语言客观题训练系统 &copy; 2023 | 即时反馈版
+        编程语言填空题训练系统 &copy; 2023 | 即时反馈版
     </footer>
 
     <script>
@@ -765,8 +791,8 @@
         
         // 更新页面标题
         const langName = langNames[lang] || 'C语言';
-        document.getElementById('page-title').textContent = `${langName}选择题训练系统`;
-        document.title = `${langName}选择题训练系统`;
+        document.getElementById('page-title').textContent = `${langName}填空题训练系统`;
+        document.title = `${langName}填空题训练系统`;
         
         // 更新背景文字
         function updateLangText(lang) {
@@ -805,33 +831,34 @@
             container.innerHTML = '<div class="no-wrong-questions"><i class="fas fa-exclamation-triangle"></i> 暂无可用的题目，请稍后再试。</div>';
         }
 
-        // 从外部文件加载题库
+        // 加载题目数据
         async function loadQuestions() {
-    const lang = getCurrentLang();
-    // 根据语言选择全局变量
-    const globalVarName = `choice_questionData_${lang}`;
-    
-    // 如果全局变量存在（通过 script 标签加载）
-    if (window[globalVarName]) {
-        return window[globalVarName];
-    }
-    
-    // 全局变量不存在时尝试 fetch（备用方案）
-    try {
-        const response = await fetch(`data/choice_questions_${lang}.json`);
-        if (!response.ok) throw new Error('题库加载失败');
-        return await response.json();
-    } catch (error) {
-        console.error('加载题库时出错:', error);
-        showErrorNotification('题库加载失败，请检查网络连接');
-        return [];
-    }
-}
+            const lang = getCurrentLang();
+            // 根据语言选择全局变量
+            const globalVarName = `fill_in_the_blank_questionData_${lang}`;
+            
+            // 如果全局变量存在（通过 script 标签加载）
+            if (window[globalVarName]) {
+                return window[globalVarName];
+            }
+            
+            // 全局变量不存在时尝试 fetch（备用方案）
+            try {
+                const response = await fetch(`data/fill_in_the_blank_questions_${lang}.json`);
+                if (!response.ok) throw new Error('题库加载失败');
+                return await response.json();
+            } catch (error) {
+                console.error('加载题库时出错:', error);
+                showErrorNotification('题库加载失败，请检查网络连接');
+                return [];
+            }
+        }
 
         // 用户状态
         let userAnswers = {};
         let markedQuestions = {};
         let currentMode = 'practice';
+        let questions = []; // 存储加载的题目
 
         // 渲染题目
         function renderQuestions(questions) {
@@ -843,22 +870,30 @@
                 
                 const questionEl = document.createElement('div');
                 questionEl.className = 'question';
+                
+                // 创建带空格的题目内容
+                const contentParts = q.content.split('______');
+                let contentHTML = '';
+                
+                // 创建输入框
+                for (let i = 0; i < q.blanks.length; i++) {
+                    if (i < contentParts.length - 1) {
+                        contentHTML += contentParts[i];
+                        contentHTML += `<input type="text" class="blank-input" id="blank-${q.id}-${i}" placeholder="填空 ${i+1}">`;
+                    }
+                }
+                contentHTML += contentParts[contentParts.length - 1];
+                
                 questionEl.innerHTML = `
                     <div class="question-header">
                         <div class="question-number">${q.id}</div>
                     </div>
                     <div class="question-content">
-                        ${q.content}
+                        ${contentHTML}
                     </div>
-                    <ul class="options">
-                        ${q.options.map(opt => `
-                            <li>
-                                <button class="option-btn" data-id="${q.id}" data-value="${opt.value}">
-                                    ${opt.text}
-                                </button>
-                            </li>
-                        `).join('')}
-                    </ul>
+                    <button class="submit-btn" data-id="${q.id}">
+                        <i class="fas fa-paper-plane"></i> 提交答案
+                    </button>
                     <div class="feedback-container">
                         <div id="feedback-${q.id}" class="feedback-content"></div>
                         <button class="mark-btn ${isMarked ? 'marked' : ''}" id="mark-btn-${q.id}" data-id="${q.id}">
@@ -871,29 +906,11 @@
                 `;
                 container.appendChild(questionEl);
                 
-                // 添加答题事件
-                document.querySelectorAll(`.option-btn[data-id="${q.id}"]`).forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const questionId = this.getAttribute('data-id');
-                        const answer = this.getAttribute('data-value');
-                        
-                        // 记录用户答案
-                        userAnswers[questionId] = answer;
-                        
-                        // 清除其他按钮的选择状态
-                        document.querySelectorAll(`.option-btn[data-id="${questionId}"]`).forEach(b => {
-                            b.classList.remove('selected');
-                        });
-                        
-                        // 设置当前选择的按钮
-                        this.classList.add('selected');
-                        
-                        // 立即显示反馈
-                        showImmediateFeedback(questionId);
-                        
-                        // 更新统计
-                        updateStats();
-                    });
+                // 添加提交按钮事件
+                const submitBtn = questionEl.querySelector('.submit-btn');
+                submitBtn.addEventListener('click', function() {
+                    const questionId = this.getAttribute('data-id');
+                    submitAnswer(questionId);
                 });
                 
                 // 添加标记按钮事件
@@ -905,10 +922,33 @@
             });
         }
         
+        // 提交答案
+        function submitAnswer(questionId) {
+            const question = questions.find(q => q.id == questionId);
+            const blanks = question.blanks;
+            const userBlanks = [];
+            
+            // 收集用户答案
+            for (let i = 0; i < blanks.length; i++) {
+                const input = document.getElementById(`blank-${questionId}-${i}`);
+                userBlanks.push(input.value.trim());
+            }
+            
+            // 记录用户答案
+            userAnswers[questionId] = userBlanks;
+            
+            // 显示反馈
+            showImmediateFeedback(questionId);
+            
+            // 更新统计
+            updateStats();
+        }
+        
         // 显示即时反馈
         function showImmediateFeedback(questionId) {
             const question = questions.find(q => q.id == questionId);
             const userAnswer = userAnswers[questionId];
+            const blanks = question.blanks;
             const feedbackEl = document.getElementById(`feedback-${questionId}`);
             const explanationEl = document.getElementById(`explanation-${questionId}`);
             
@@ -917,18 +957,45 @@
                 feedbackEl.style.display = 'block';
                 explanationEl.style.display = 'block';
                 
-                if (userAnswer === question.answer) {
+                // 检查答案是否正确
+                let allCorrect = true;
+                let feedbackHTML = '';
+                
+                for (let i = 0; i < blanks.length; i++) {
+                    const isCorrect = userAnswer[i].toLowerCase() === blanks[i].toLowerCase();
+                    allCorrect = allCorrect && isCorrect;
+                    
+                    // 添加图标颜色类
+                    const iconClass = isCorrect ? 'fa-check correct-icon' : 'fa-times incorrect-icon';
+                    
+                    feedbackHTML += `
+                        <div class="blank-feedback">
+                            <span class="blank-result">空${i+1}: ${userAnswer[i] || '未填写'}</span>
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                    `;
+                }
+                
+                feedbackHTML += `<div class="overall-feedback">`;
+                
+                if (allCorrect) {
                     feedbackEl.className = 'feedback correct-feedback';
-                    feedbackEl.innerHTML = `<i class="fas fa-check-circle"></i> 回答正确！标准答案：${question.answer}`;
+                    feedbackHTML += `<i class="fas fa-check-circle"></i> 回答正确！`;
                 } else {
                     feedbackEl.className = 'feedback incorrect-feedback';
-                    feedbackEl.innerHTML = `<i class="fas fa-times-circle"></i> 回答错误！标准答案：${question.answer}`;
+                    feedbackHTML += `<i class="fas fa-times-circle"></i> 回答错误！`;
+                    
+                    // 显示正确答案
+                    feedbackHTML += `<div class="correct-answer">正确答案: ${blanks.join(', ')}</div>`;
                     
                     // 自动标记答错的题目
                     if (!markedQuestions[questionId]) {
                         toggleMarkQuestion(questionId);
                     }
                 }
+                
+                feedbackHTML += `</div>`;
+                feedbackEl.innerHTML = feedbackHTML;
             }
         }
         
@@ -947,6 +1014,11 @@
             
             // 更新统计
             updateStats();
+            
+            // 如果当前是错题回顾模式，重新渲染错题列表
+            if (currentMode === 'review') {
+                renderWrongQuestions(questions);
+            }
         }
         
         // 渲染错题
@@ -968,39 +1040,52 @@
             
             sortedIds.forEach(id => {
                 const q = questions.find(question => question.id == id);
+                const isMarked = markedQuestions[q.id] || false;
+                
                 const questionEl = document.createElement('div');
                 questionEl.className = 'question';
+                questionEl.id = `wrong-question-${q.id}`;
+                
+                // 创建带空格的题目内容
+                const contentParts = q.content.split('______');
+                let contentHTML = '';
+                
+                // 创建输入框（只读）
+                for (let i = 0; i < q.blanks.length; i++) {
+                    if (i < contentParts.length - 1) {
+                        contentHTML += contentParts[i];
+                        contentHTML += `<span class="blank-input correct-blank">${q.blanks[i]}</span>`;
+                    }
+                }
+                contentHTML += contentParts[contentParts.length - 1];
+                
                 questionEl.innerHTML = `
                     <div class="question-header">
                         <div class="question-number">${q.id}</div>
                     </div>
                     <div class="question-content">
-                        ${q.content}
+                        ${contentHTML}
                     </div>
-                    <ul class="options">
-                        ${q.options.map(opt => `
-                            <li>
-                                <button class="option-btn" data-id="${q.id}" data-value="${opt.value}">
-                                    ${opt.text}
-                                </button>
-                            </li>
-                        `).join('')}
-                    </ul>
                     <div class="feedback-container">
-                        <div id="feedback-${q.id}" class="feedback-content"></div>
-                        <button class="mark-btn marked" id="mark-btn-${q.id}" data-id="${q.id}">
+                        <div class="feedback correct-feedback">
+                            <i class="fas fa-info-circle"></i> 正确答案已显示
+                        </div>
+                        <button class="mark-btn marked" id="wrong-mark-btn-${q.id}" data-id="${q.id}">
                             <i class="fas fa-flag"></i> 已标记
                         </button>
                     </div>
-                    <div id="explanation-${q.id}" class="explanation">
+                    <div class="explanation">
                         ${q.explanation}
                     </div>
                 `;
                 container.appendChild(questionEl);
                 
-                // 显示正确答案和解析
-                const feedbackEl = document.getElementById(`feedback-${q.id}`);
-                // 这里可以添加显示反馈和解析的逻辑
+                // 添加标记按钮事件
+                const markBtn = document.getElementById(`wrong-mark-btn-${q.id}`);
+                markBtn.addEventListener('click', function() {
+                    const questionId = this.getAttribute('data-id');
+                    toggleMarkQuestion(questionId);
+                });
             });
         }
 
@@ -1011,31 +1096,44 @@
             const correct = document.getElementById('correct');
             const marked = document.getElementById('marked');
 
-            const questions = Object.values(userAnswers);
-            const correctCount = Object.entries(userAnswers).filter(([id, answer]) => {
+            const total = questions.length;
+            const answeredCount = Object.keys(userAnswers).length;
+            const correctCount = Object.entries(userAnswers).filter(([id, userBlanks]) => {
                 const question = questions.find(q => q.id == id);
-                return question && answer === question.answer;
+                if (!question) return false;
+                
+                // 检查每个空是否都正确
+                for (let i = 0; i < question.blanks.length; i++) {
+                    if (userBlanks[i].toLowerCase() !== question.blanks[i].toLowerCase()) {
+                        return false;
+                    }
+                }
+                return true;
             }).length;
 
-            totalQuestions.textContent = questions.length;
-            answered.textContent = Object.keys(userAnswers).length;
+            const markedCount = Object.values(markedQuestions).filter(Boolean).length;
+
+            totalQuestions.textContent = total;
+            answered.textContent = answeredCount;
             correct.textContent = correctCount;
-            marked.textContent = Object.values(markedQuestions).filter(Boolean).length;
+            marked.textContent = markedCount;
 
             const progressBar = document.getElementById('progress-bar');
-            const progress = (Object.keys(userAnswers).length / questions.length) * 100;
+            const progress = (answeredCount / total) * 100;
             progressBar.style.width = `${progress}%`;
         }
 
         // 重置练习
         function resetPractice() {
-            userAnswers = {};
-            markedQuestions = {};
-            currentMode = 'practice';
-            updateModeUI();
-            document.getElementById('questions-container').style.display = 'block';
-            document.getElementById('wrong-questions-container').style.display = 'none';
-            init();
+            if (confirm('确定要重置所有答题记录吗？')) {
+                userAnswers = {};
+                markedQuestions = {};
+                currentMode = 'practice';
+                updateModeUI();
+                document.getElementById('questions-container').style.display = 'block';
+                document.getElementById('wrong-questions-container').style.display = 'none';
+                init();
+            }
         }
 
         // 更新模式UI
@@ -1052,18 +1150,17 @@
             }
         }
 
-        // 在初始化时使用
+        // 初始化
         async function init() {
-    window.choice_questionData_c = window.choice_questionData_c || window.questionData;
-    const questions = await loadQuestions();
-    if (questions.length > 0) {
-        renderQuestions(questions);
-        updateStats();
-    } else {
-        showEmptyState();
-    }
-
-
+            window.fill_in_the_blank_questionData_c = window.fill_in_the_blank_questionData_c || window.questionData;
+            questions = await loadQuestions();
+            
+            if (questions.length > 0) {
+                renderQuestions(questions);
+                updateStats();
+            } else {
+                showEmptyState();
+            }
 
             // 模式切换事件
             document.getElementById('practice-mode').addEventListener('click', function() {
@@ -1082,12 +1179,11 @@
             });
             
             // 重置按钮
-            document.getElementById('reset-btn').addEventListener('click', function() {
-                resetPractice();
-            });
+            document.getElementById('reset-btn').addEventListener('click', resetPractice);
         }
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', init);
     </script>
+</body>
 </html>

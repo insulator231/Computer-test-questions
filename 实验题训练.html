@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多语言实验题训练系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <script src="data/experiment_questions_c.js"></script>    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-light: rgba(148, 163, 184, 0.2);
+            --theme-primary: #4f46e5;
+            --theme-secondary: #8b5cf6;
+            --theme-accent: #60a5fa;
+            --theme-glow: rgba(79, 70, 229, 0.3);
+        }
+
+        /* 语言主题定义 */
+        body.theme-c {
+            --theme-primary: #4f46e5;
+            --theme-secondary: #8b5cf6;
+            --theme-accent: #60a5fa;
+            --theme-glow: rgba(79, 70, 229, 0.3);
+        }
+        
+        body.theme-python {
+            --theme-primary: #2e8540;
+            --theme-secondary: #38a169;
+            --theme-accent: #48bb78;
+            --theme-glow: rgba(46, 133, 64, 0.3);
+        }
+        
+        body.theme-java {
+            --theme-primary: #b07219;
+            --theme-secondary: #e76f00;
+            --theme-accent: #f89820;
+            --theme-glow: rgba(176, 114, 25, 0.3);
+        }
+        
+        body.theme-js {
+            --theme-primary: #f0db4f;
+            --theme-secondary: #f7df1e;
+            --theme-accent: #f8e71c;
+            --theme-glow: rgba(240, 219, 79, 0.3);
+        }
+        
+        body.theme-cpp {
+            --theme-primary: #004482;
+            --theme-secondary: #659ad2;
+            --theme-accent: #00599c;
+            --theme-glow: rgba(0, 68, 130, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            transition: background-color 0.5s ease, color 0.3s ease;
+        }
+
+        body {
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text-light);
+        }
+
+        /* 网格背景 */
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border-light) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-light) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.15;
+            z-index: -3;
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--theme-accent);
+            filter: blur(20px);
+            animation: float 15s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        .particle:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 5%;
+            opacity: 0.1;
+        }
+
+        .particle:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: 15%;
+            right: 10%;
+            opacity: 0.15;
+            animation-delay: 2s;
+        }
+
+        .particle:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 40%;
+            right: 20%;
+            opacity: 0.08;
+            animation-delay: 4s;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* 霓虹边框效果 */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            animation: border-animation 3s infinite linear;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .lang-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-light);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--theme-glow);
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--theme-accent);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .question {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .question-content {
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.7;
+            color: var(--text-light);
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            border-left: 5px solid var(--theme-primary);
+        }
+
+        .code-container {
+            margin: 25px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .code-header {
+            background: #2d3748;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .code-editor {
+            border: none;
+            height: 300px;
+            width: 100%;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 15px;
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .test-cases {
+            margin-top: 25px;
+        }
+
+        .test-case {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--theme-secondary);
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .test-title {
+            font-weight: bold;
+            color: var(--theme-accent);
+        }
+
+        .test-result {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-result.success {
+            color: #4ade80;
+        }
+
+        .test-result.failure {
+            color: #f87171;
+        }
+
+        .test-details {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .action-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.2) 100%);
+            z-index: -1;
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            padding: 20px;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .mark-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .mark-btn.marked {
+            color: var(--theme-accent);
+        }
+        
+        .mark-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .feedback-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .success-feedback {
+            border-left: 5px solid #4ade80;
+        }
+
+        .failure-feedback {
+            border-left: 5px solid #f87171;
+        }
+
+        .feedback-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-content {
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        /* 动画定义 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            25% { transform: translateY(-20px) translateX(10px) scale(1.05); }
+            50% { transform: translateY(10px) translateX(-15px) scale(0.95); }
+            75% { transform: translateY(-15px) translateX(-10px) scale(1.02); }
+        }
+
+        @keyframes border-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .stats-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .question {
+                padding: 20px 15px;
+            }
+            
+            .question-content {
+                padding: 15px;
+                font-size: 16px;
+            }
+            
+            .code-editor {
+                height: 250px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .question-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .lang-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body class="theme-c">
+    <!-- 背景装饰元素 -->
+    <div class="bg-elements">
+        <div class="grid-pattern"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1 id="page-title">C语言实验题训练系统</h1>
+            <div class="subtitle">编写代码 · 运行测试 · 即时反馈</div>
+            
+            <div class="lang-selector">
+                <button class="lang-btn active" data-lang="c">
+                    <i class="fab fa-c"></i> C语言
+                </button>
+                <button class="lang-btn" data-lang="python">
+                    <i class="fab fa-python"></i> Python
+                </button>
+                <button class="lang-btn" data-lang="java">
+                    <i class="fab fa-java"></i> Java
+                </button>
+                <button class="lang-btn" data-lang="js">
+                    <i class="fab fa-js"></i> JavaScript
+                </button>
+                <button class="lang-btn" data-lang="cpp">
+                    <i class="fas fa-plus"></i> C++
+                </button>
+            </div>
+        </header>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="total-questions">5</div>
+                <div class="stat-label">总题数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completed">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="passed">0</div>
+                <div class="stat-label">已通过</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="marked">0</div>
+                <div class="stat-label">标记题</div>
+            </div>
+        </div>
+        
+        <div class="question">
+            <div class="question-header">
+                <div class="question-number" id="current-question">1</div>
+                <button class="mark-btn" id="mark-btn">
+                    <i class="fas fa-flag"></i> 标记本题
+                </button>
+            </div>
+            
+            <div class="question-content">
+                <h3 id="question-title">函数功能：求累加和</h3>
+                <p id="question-description">编写函数 fun 求 sum = d + dd + ddd + ... + dd...d (n个d)，其中d为1-9的数字。</p>
+                <p>例如：3 + 33 + 333 + 3333 + 33333 (此时d=3, n=5)</p>
+                <p>请完成以下函数：</p>
+                <pre id="function-prototype">long int fun(int d, int n) {
+    // 在此编写代码
+    
+}</pre>
+            </div>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <div>代码编辑器</div>
+                    <div id="code-lang"><i class="fas fa-code"></i> C语言</div>
+                </div>
+                <textarea id="code-editor" class="code-editor">long int fun(int d, int n) {
+    long int s = 0, t = 0;
+    int i;
+    for (i = 1; i <= n; i++) {
+        t = t * 10 + d;
+        s = s + t;
+    }
+    return s;
+}</textarea>
+            </div>
+            
+            <div class="test-cases">
+                <h3><i class="fas fa-vial"></i> 测试用例</h3>
+                <div class="test-case">
+                    <div class="test-header">
+                        <div class="test-title">测试用例 1: fun(3, 5)</div>
+                        <div class="test-result" id="test-result-1">
+                            <i class="fas fa-circle-notch fa-spin"></i> 待测试
+                        </div>
+                    </div>
+                    <div class="test-details">
+                        <p>输入: d=3, n=5</p>
+                        <p>预期输出: 37035 (3+33+333+3333+33333)</p>
+                    </div>
+                </div>
+                
+                <div class="test-case">
+                    <div class="test-header">
+                        <div class="test-title">测试用例 2: fun(1, 3)</div>
+                        <div class="test-result" id="test-result-2">
+                            <i class="fas fa-circle-notch fa-spin"></i> 待测试
+                        </div>
+                    </div>
+                    <div class="test-details">
+                        <p>输入: d=1, n=3</p>
+                        <p>预期输出: 123 (1+11+111)</p>
+                    </div>
+                </div>
+                
+                <div class="test-case">
+                    <div class="test-header">
+                        <div class="test-title">测试用例 3: fun(5, 4)</div>
+                        <div class="test-result" id="test-result-3">
+                            <i class="fas fa-circle-notch fa-spin"></i> 待测试
+                        </div>
+                    </div>
+                    <div class="test-details">
+                        <p>输入: d=5, n=4</p>
+                        <p>预期输出: 6170 (5+55+555+5555)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feedback-container" id="feedback-container">
+                <div class="feedback-title">
+                    <i class="fas fa-comment-alt"></i> 运行反馈
+                </div>
+                <div class="feedback-content" id="feedback-content">
+                    编写代码后，点击"运行测试"按钮查看结果
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="action-btn" id="prev-btn">
+                <i class="fas fa-arrow-left"></i> 上一题
+            </button>
+            <button class="action-btn" id="run-btn">
+                <i class="fas fa-play-circle"></i> 运行测试
+            </button>
+            <button class="action-btn" id="next-btn">
+                下一题 <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="action-btn" id="reset-btn">
+                <i class="fas fa-sync-alt"></i> 重置代码
+            </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="训练主页.html" class="action-btn">
+                <i class="fas fa-arrow-left"></i> 返回训练主页
+            </a>
+        </div>
+    </div>
+    
+    <footer>
+        多语言实验题训练系统 &copy; 2023 | 代码实战平台
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script>
+        // 初始化代码编辑器
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            mode: 'text/x-csrc',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            indentWithTabs: false,
+            extraKeys: {"Tab": "indentMore"},
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            styleActiveLine: true,
+            lineWrapping: true
+        });
+        
+        // 语言名称映射
+        const langNames = {
+            'c': 'C语言',
+            'python': 'Python',
+            'java': 'Java',
+            'js': 'JavaScript',
+            'cpp': 'C++'
+        };
+        
+        // 语言模式映射
+        const langModes = {
+            'c': 'text/x-csrc',
+            'cpp': 'text/x-c++src',
+            'python': 'python',
+            'java': 'text/x-java',
+            'js': 'javascript'
+        };
+        
+        // 从URL获取语言参数
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentLang = urlParams.get('lang') || 'c';
+        
+        // 设置主题
+        document.body.className = `theme-${currentLang}`;
+        
+        // 更新页面标题
+        function updatePageTitle() {
+            const langName = langNames[currentLang] || 'C语言';
+            document.getElementById('page-title').textContent = `${langName}实验题训练系统`;
+            document.title = `${langName}实验题训练系统`;
+            document.getElementById('code-lang').innerHTML = `<i class="fas fa-code"></i> ${langName}`;
+        }
+        
+        // 当前状态
+        let currentQuestionIndex = 0;
+        let markedQuestions = {};
+        let completedQuestions = {};
+        let questions = [];
+        
+        // 加载题目数据
+        async function loadQuestions(lang) {
+            try {
+                const response = await fetch(`data/experiment_questions_${lang}.js`);
+                if (!response.ok) throw new Error('题库加载失败');
+                
+                // 动态执行JS文件
+                const scriptText = await response.text();
+                const script = document.createElement('script');
+                script.textContent = scriptText;
+                document.body.appendChild(script);
+                
+                // 获取全局变量
+                const globalVarName = `experiment_questionData_${lang}`;
+                if (window[globalVarName]) {
+                    questions = window[globalVarName];
+                    return questions;
+                } else {
+                    throw new Error('题库格式错误');
+                }
+            } catch (error) {
+                console.error('加载题库时出错:', error);
+                alert('题库加载失败，请检查网络连接');
+                return [];
+            }
+        }
+        
+        // 更新题目显示
+        function updateQuestionDisplay() {
+            if (questions.length === 0) return;
+            
+            const question = questions[currentQuestionIndex];
+            document.getElementById('current-question').textContent = question.id;
+            document.getElementById('question-title').textContent = question.title;
+            document.getElementById('question-description').textContent = question.description;
+            document.getElementById('function-prototype').textContent = question.functionPrototype;
+            
+            // 更新标记状态
+            const markBtn = document.getElementById('mark-btn');
+            if (markedQuestions[question.id]) {
+                markBtn.classList.add('marked');
+                markBtn.innerHTML = '<i class="fas fa-flag"></i> 已标记';
+            } else {
+                markBtn.classList.remove('marked');
+                markBtn.innerHTML = '<i class="fas fa-flag"></i> 标记本题';
+            }
+            
+            // 重置测试结果
+            document.querySelectorAll('.test-result').forEach(el => {
+                el.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> 待测试';
+                el.className = 'test-result';
+            });
+            
+            // 更新反馈
+            document.getElementById('feedback-content').textContent = 
+                '编写代码后，点击"运行测试"按钮查看结果';
+            document.getElementById('feedback-container').className = 'feedback-container';
+            
+            // 设置编辑器内容
+            editor.setValue(question.initialCode);
+            
+            // 更新按钮状态
+            document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = currentQuestionIndex === questions.length - 1;
+            
+            // 更新统计
+            updateStats();
+        }
+        
+        // 运行测试
+        function runTests() {
+            if (questions.length === 0) return;
+            
+            const question = questions[currentQuestionIndex];
+            const code = editor.getValue();
+            let allPassed = true;
+            let passedCount = 0;
+            
+            // 创建函数
+            try {
+                // 注意：实际环境中应使用更安全的方式执行代码
+                // 这里仅用于演示
+                let fun;
+                
+                if (currentLang === 'python') {
+                    // Python使用eval执行
+                    eval(code);
+                    fun = (d, n) => window.fun(d, n);
+                } else {
+                    // 其他语言使用Function构造
+                    fun = new Function('d', 'n', code + '; return fun(d, n);');
+                }
+                
+                question.testCases.forEach((testCase, index) => {
+                    const resultEl = document.getElementById(`test-result-${index + 1}`);
+                    try {
+                        const result = fun(...testCase.input);
+                        if (result === testCase.expected) {
+                            resultEl.innerHTML = '<i class="fas fa-check-circle"></i> 通过';
+                            resultEl.className = 'test-result success';
+                            passedCount++;
+                        } else {
+                            resultEl.innerHTML = `<i class="fas fa-times-circle"></i> 失败 (输出: ${result})`;
+                            resultEl.className = 'test-result failure';
+                            allPassed = false;
+                        }
+                    } catch (error) {
+                        resultEl.innerHTML = `<i class="fas fa-bug"></i> 错误: ${error.message}`;
+                        resultEl.className = 'test-result failure';
+                        allPassed = false;
+                    }
+                });
+                
+                // 更新反馈
+                const feedbackContainer = document.getElementById('feedback-container');
+                const feedbackContent = document.getElementById('feedback-content');
+                
+                if (allPassed) {
+                    feedbackContainer.className = 'feedback-container success-feedback';
+                    feedbackContent.innerHTML = `
+                        <p><i class="fas fa-check-circle"></i> 恭喜！所有测试用例已通过</p>
+                        <p>代码运行结果符合预期，题目完成！</p>
+                    `;
+                    
+                    // 标记为已完成
+                    completedQuestions[question.id] = true;
+                } else {
+                    feedbackContainer.className = 'feedback-container failure-feedback';
+                    feedbackContent.innerHTML = `
+                        <p><i class="fas fa-exclamation-triangle"></i> ${passedCount}/${question.testCases.length} 个测试用例通过</p>
+                        <p>请检查未通过的测试用例并修改代码</p>
+                    `;
+                }
+                
+            } catch (error) {
+                document.getElementById('feedback-container').className = 'feedback-container failure-feedback';
+                document.getElementById('feedback-content').innerHTML = `
+                    <p><i class="fas fa-bug"></i> 代码执行出错: ${error.message}</p>
+                    <p>请检查代码语法和逻辑错误</p>
+                `;
+                
+                // 标记所有测试为失败
+                question.testCases.forEach((_, index) => {
+                    const resultEl = document.getElementById(`test-result-${index + 1}`);
+                    resultEl.innerHTML = '<i class="fas fa-bug"></i> 执行错误';
+                    resultEl.className = 'test-result failure';
+                });
+            }
+            
+            // 更新统计
+            updateStats();
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('total-questions').textContent = questions.length;
+            document.getElementById('completed').textContent = Object.keys(completedQuestions).length;
+            
+            // 计算已通过的题目数（所有测试用例通过）
+            let passedCount = 0;
+            questions.forEach(q => {
+                if (completedQuestions[q.id]) passedCount++;
+            });
+            document.getElementById('passed').textContent = passedCount;
+            
+            document.getElementById('marked').textContent = Object.keys(markedQuestions).length;
+        }
+        
+        // 切换题目标记
+        function toggleMarkQuestion() {
+            if (questions.length === 0) return;
+            
+            const questionId = questions[currentQuestionIndex].id;
+            if (markedQuestions[questionId]) {
+                delete markedQuestions[questionId];
+            } else {
+                markedQuestions[questionId] = true;
+            }
+            updateQuestionDisplay();
+        }
+        
+        // 切换语言
+        async function switchLanguage(lang) {
+            currentLang = lang;
+            
+            // 更新UI
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            
+            // 设置主题
+            document.body.className = `theme-${lang}`;
+            
+            // 更新页面标题
+            updatePageTitle();
+            
+            // 设置编辑器模式
+            editor.setOption('mode', langModes[lang]);
+            
+            // 加载新语言的题目
+            questions = await loadQuestions(lang);
+            currentQuestionIndex = 0;
+            markedQuestions = {};
+            completedQuestions = {};
+            
+            if (questions.length > 0) {
+                updateQuestionDisplay();
+            }
+        }
+        
+        // 初始化
+        async function init() {
+            // 加载题目
+            questions = await loadQuestions(currentLang);
+            
+            // 更新UI
+            updatePageTitle();
+            updateQuestionDisplay();
+            
+            // 语言切换事件
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchLanguage(btn.dataset.lang);
+                });
+            });
+            
+            // 事件监听
+            document.getElementById('run-btn').addEventListener('click', runTests);
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                if (questions.length === 0) return;
+                editor.setValue(questions[currentQuestionIndex].initialCode);
+                
+                // 重置测试结果
+                document.querySelectorAll('.test-result').forEach(el => {
+                    el.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> 待测试';
+                    el.className = 'test-result';
+                });
+                
+                document.getElementById('feedback-content').textContent = 
+                    '编写代码后，点击"运行测试"按钮查看结果';
+                document.getElementById('feedback-container').className = 'feedback-container';
+            });
+            
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    updateQuestionDisplay();
+                }
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    updateQuestionDisplay();
+                }
+            });
+            
+            document.getElementById('mark-btn').addEventListener('click', toggleMarkQuestion);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
